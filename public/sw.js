@@ -1,6 +1,6 @@
-const CACHE = 'runadam-v5';
+const CACHE = 'runadam-v6';
 const ASSETS = [
-  './', './index.html', './manifest.webmanifest', './logo.svg', './hero.webp',
+  './', './index.html', './manifest.webmanifest', './logo.svg', './hero.webp', './logo-photo.webp',
   './apple-touch-icon.png', './icon-192.png', './icon-512.png', './icon-maskable-512.png'
 ];
 self.addEventListener('install', e => {

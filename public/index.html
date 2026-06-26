@@ -28,6 +28,10 @@
   /* dagci/kamp fotografi - tum uygulamanin arkasinda sabit (aradaki alanlarda net gorunur) */
   body::before{content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;
     background:url('hero.webp') center center / cover no-repeat}
+  /* mobil/dar ekran: yatay foto kenarda kaliyor -> dikey foto (kisi ortada) */
+  @media (max-width:640px){
+    body::before{background-image:url('logo-photo.webp');background-position:50% center}
+  }
   /* okunabilirlik icin hafif karartma: ust acik (foto daha gorunur), alt biraz koyu */
   body::after{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
     background:linear-gradient(180deg, rgba(8,13,34,.30) 0%, rgba(8,13,34,.48) 50%, rgba(8,13,34,.70) 100%)}
@@ -53,7 +57,8 @@
     background:linear-gradient(120deg,var(--red),var(--red2) 50%,var(--red3));
     border-bottom:1px solid rgba(255,255,255,.12)}
   .hd{display:flex;align-items:center;gap:13px;padding:13px 14px;max-width:760px;margin:0 auto;position:relative;z-index:2}
-  .hd img{width:56px;height:56px;border-radius:15px;flex:none;background:#0c1740;
+  .hd .hd-logo{width:56px;height:56px;border-radius:15px;flex:none;
+    background:#0c1740 url('logo-photo.webp') 55% 22% / 215% auto no-repeat;
     box-shadow:0 0 0 2px rgba(255,255,255,.3), 0 5px 18px rgba(0,0,0,.5), 0 0 26px rgba(255,255,255,.4)}
   .hd .ti h1{font-size:24px;margin:0;letter-spacing:.6px;font-weight:800;color:#fff;
     text-shadow:0 0 16px rgba(255,255,255,.5)}
@@ -192,7 +197,7 @@
 
 <header class="stars">
   <div class="hd">
-    <img src="logo.svg" alt="RunAdam">
+    <div class="hd-logo" role="img" aria-label="RunAdam"></div>
     <div class="ti">
       <h1>RunAdam</h1>
       <p>Gelecek azmedenlere adanmıştır</p>
