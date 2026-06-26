@@ -378,6 +378,13 @@ function parsePace(str){if(!str)return 0;const p=String(str).trim().split(':').m
   if(p.length===2)return p[0]*60+p[1];return Math.round(numTR(str)*60)}
 function fmtDateLong(key){try{return parseKey(key).toLocaleDateString('tr-TR',{day:'2-digit',month:'long',year:'numeric',weekday:'long'})}catch(e){return key}}
 
+/* ---------------- API adresi ----------------
+   Ayni sunucudan servis edilirse (Render) bos = ayni origin.
+   GitHub Pages (github.io) gibi statik barindirmada backend yok; canli
+   sunucuya yonlendir (foto okuma + senkron orada calissin). */
+const API_BASE = (location.hostname.endsWith('github.io') || location.protocol==='file:')
+  ? 'https://urun-fiyat-takip.onrender.com' : '';
+
 /* ---------------- durum / depo ---------------- */
 const LS='runadam_db_v1', LS_CODE='runadam_synccode';
 let db={runs:[],deleted:[]};
@@ -412,7 +419,7 @@ function mergeDb(local,remote){
 
 async function pullSync(){
   try{
-    const r=await fetch('/api/kv/'+kvKey());
+    const r=await fetch(API_BASE+'/api/kv/'+kvKey());
     if(!r.ok)throw 0;
     const j=await r.json();
     if(j&&j.ok&&j.data){ db=mergeDb(db,j.data); saveLocal(); }
@@ -421,7 +428,7 @@ async function pullSync(){
 }
 async function pushSync(){
   try{
-    const r=await fetch('/api/kv/'+kvKey(),{method:'PUT',headers:{'content-type':'application/json'},
+    const r=await fetch(API_BASE+'/api/kv/'+kvKey(),{method:'PUT',headers:{'content-type':'application/json'},
       body:JSON.stringify({data:{runs:db.runs,deleted:db.deleted}})});
     return r.ok;
   }catch(e){return false;}
@@ -654,7 +661,7 @@ async function analyzePhoto(file){
     const pv=$('editPreview');pv.src=dataUrl;pv.style.display='block';
     st.textContent='🤖 Ekran okunuyor…';
     const ctrl=new AbortController();const to=setTimeout(()=>ctrl.abort(),45000);
-    const r=await fetch('/api/vision-activity',{method:'POST',headers:{'content-type':'application/json'},
+    const r=await fetch(API_BASE+'/api/vision-activity',{method:'POST',headers:{'content-type':'application/json'},
       body:JSON.stringify({image:base64,mediaType}),signal:ctrl.signal});
     clearTimeout(to);
     if(r.status===503){st.innerHTML='⚠️ Otomatik okuma kapalı (sunucuda <b>ANTHROPIC_API_KEY</b> gerekli). Değerleri elle gir.';return;}
