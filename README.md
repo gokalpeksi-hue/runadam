@@ -1,6 +1,11 @@
-# 🏃 RunAdam
+<p align="center">
+  <img src="public/icon-192.png" width="128" alt="RunAdam">
+</p>
 
-> _"Gelecek azmedenlere adanmıştır."_
+<h1 align="center">RunAdam</h1>
+
+<p align="center"><i>"Gelecek azmedenlere adanmıştır."</i></p>
+
 
 Koşu bandı / kardiyo makinesi / fitness uygulaması özet ekranının **fotoğrafını çek**,
 süre · mesafe · kalori · tempo · hız · nabız · eğim · tırmanış · watt · METs değerleri
