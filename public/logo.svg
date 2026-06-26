@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="RunAdam">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ef2233"/>
+      <stop offset="0.5" stop-color="#b01225"/>
+      <stop offset="1" stop-color="#0c1740"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.2" cy="0.85" r="0.75">
+      <stop offset="0" stop-color="#1b3a8f" stop-opacity="0.95"/>
+      <stop offset="1" stop-color="#1b3a8f" stop-opacity="0"/>
+    </radialGradient>
+    <clipPath id="torso"><polygon points="229.5,280.9 299.5,205.9 340.5,244.1 270.5,319.1"/></clipPath>
+  </defs>
+
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  <rect width="512" height="512" rx="112" fill="url(#glow)"/>
+
+  <!-- gece mavisi alandaki yildizlar -->
+  <g fill="#eaf0ff">
+    <circle cx="66" cy="432" r="3.6"/><circle cx="118" cy="470" r="2.3"/>
+    <circle cx="158" cy="420" r="2.7"/><circle cx="58" cy="358" r="2.3"/>
+    <circle cx="206" cy="466" r="2.1"/><circle cx="95" cy="400" r="1.9"/>
+  </g>
+  <g fill="#ffffff"><path d="M150 350 l4 9 9 4 -9 4 -4 9 -4 -9 -9 -4 9 -4z"/></g>
+
+  <!-- hiz cizgileri (depar) -->
+  <g stroke="#ffffff" stroke-width="13" stroke-linecap="round" opacity="0.92">
+    <path d="M104 246 L182 246"/><path d="M86 286 L168 286"/><path d="M120 322 L182 322"/>
+  </g>
+
+  <!-- arka uzuvlar (govdenin arkasinda) -->
+  <g stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <path d="M250 300 L205 345 L165 393" stroke="#566070" stroke-width="22"/><!-- arka bacak (gri pantolon) -->
+    <path d="M318 226 L268 218 L286 268" stroke="#dca473" stroke-width="15"/><!-- arka kol (ten) -->
+  </g>
+
+  <!-- govde: kamuflaj tisort -->
+  <polygon points="229.5,280.9 299.5,205.9 340.5,244.1 270.5,319.1" fill="#5b6b3a"/>
+  <g clip-path="url(#torso)">
+    <ellipse cx="258" cy="252" rx="27" ry="21" fill="#39431f"/>
+    <ellipse cx="302" cy="272" rx="23" ry="18" fill="#8a7c4d"/>
+    <ellipse cx="322" cy="232" rx="20" ry="16" fill="#2c3318"/>
+    <ellipse cx="286" cy="236" rx="16" ry="13" fill="#6f7d44"/>
+    <ellipse cx="246" cy="292" rx="15" ry="12" fill="#8a7c4d"/>
+    <ellipse cx="318" cy="285" rx="13" ry="11" fill="#39431f"/>
+  </g>
+
+  <!-- on uzuvlar (govdenin onunde) -->
+  <g stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <path d="M252 300 L300 356 L360 380" stroke="#79828f" stroke-width="23"/><!-- on bacak (gri pantolon) -->
+    <path d="M320 224 L360 264 L332 300" stroke="#eab488" stroke-width="16"/><!-- on kol (ten) -->
+  </g>
+  <!-- kisa kol manseti (kamuflaj) -->
+  <circle cx="322" cy="228" r="13" fill="#5b6b3a"/>
+  <circle cx="316" cy="232" r="6" fill="#39431f"/>
+
+  <!-- ayakkabilar -->
+  <g fill="#23272f">
+    <ellipse cx="362" cy="384" rx="20" ry="10" transform="rotate(14 362 384)"/>
+    <ellipse cx="162" cy="394" rx="19" ry="10" transform="rotate(-18 162 394)"/>
+  </g>
+
+  <!-- bas + kisa sac -->
+  <circle cx="351" cy="196" r="26" fill="#eab488"/>
+  <path d="M326 196 a26 26 0 0 1 50 -5 c-7 -12 -40 -15 -50 5 z" fill="#2a2722"/>
+</svg>

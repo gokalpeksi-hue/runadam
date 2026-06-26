@@ -1,0 +1,18 @@
+# Bagimliliklar
+node_modules/
+
+# Ortam degiskenleri (API anahtari burada, ASLA commit'lenmez)
+.env
+
+# Calisma zamani verisi (yerel senkron bloblari)
+data/
+
+# Loglar
+*.log
+npm-debug.log*
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

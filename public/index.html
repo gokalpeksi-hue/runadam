@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#b01225">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="RunAdam">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link rel="icon" type="image/svg+xml" href="logo.svg">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<title>RunAdam</title>
+<style>
+  :root{
+    --space:#0a1740; --space2:#102a6b; --parliament:#1b3a8f; --parliament2:#274fb0;
+    --red:#e11d2a; --red2:#b01225; --red3:#7f1020;
+    --blue:#3b5bff; --blue2:#acc1ff;
+    --card:rgba(16,33,86,.62); --card2:rgba(22,44,108,.7); --line:#33529e;
+    --txt:#ffffff; --muted:#a9bbe8; --good:#3ddc84; --warn:#ffc107;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+    background:radial-gradient(ellipse at 50% -8%, #21449a 0%, #122a72 38%, #0a173f 70%, #060c24 100%) fixed;
+    color:var(--txt);min-height:100vh;padding-bottom:84px}
+  /* tum ekrani kaplayan yildizli uzay (kirmizi alanlarin arkasinda da durur) */
+  body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+    background-image:
+      radial-gradient(1.5px 1.5px at 24px 32px,#ffffff,transparent),
+      radial-gradient(1.2px 1.2px at 92px 78px,#cfe0ff,transparent),
+      radial-gradient(1.7px 1.7px at 142px 48px,#ffffff,transparent),
+      radial-gradient(1.1px 1.1px at 52px 132px,#dbe4ff,transparent),
+      radial-gradient(1.3px 1.3px at 124px 142px,#ffffff,transparent),
+      radial-gradient(2.1px 2.1px at 256px 96px,#ffffff,transparent),
+      radial-gradient(1.6px 1.6px at 64px 232px,#cfe0ff,transparent),
+      radial-gradient(1.4px 1.4px at 300px 220px,#ffffff,transparent);
+    background-size:170px 170px,170px 170px,170px 170px,170px 170px,170px 170px,340px 340px,340px 340px,340px 340px;
+    animation:twinkle 5s ease-in-out infinite alternate}
+  .wrap{max-width:760px;margin:0 auto;padding:0 14px;position:relative;z-index:1}
+
+  /* ---- yildizli gece mavisi yuzey ---- */
+  .stars{position:relative;overflow:hidden}
+  .stars::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.9;
+    background-image:
+      radial-gradient(1.4px 1.4px at 12% 30%, #dbe4ff 50%, transparent 52%),
+      radial-gradient(1.2px 1.2px at 28% 70%, #fff 50%, transparent 52%),
+      radial-gradient(1.6px 1.6px at 47% 22%, #cfe0ff 50%, transparent 52%),
+      radial-gradient(1.2px 1.2px at 63% 64%, #fff 50%, transparent 52%),
+      radial-gradient(1.5px 1.5px at 78% 36%, #dbe4ff 50%, transparent 52%),
+      radial-gradient(1.1px 1.1px at 88% 74%, #fff 50%, transparent 52%),
+      radial-gradient(1.3px 1.3px at 36% 48%, #cfe0ff 50%, transparent 52%),
+      radial-gradient(1.1px 1.1px at 70% 14%, #fff 50%, transparent 52%);
+    animation:twinkle 4s ease-in-out infinite alternate}
+  @keyframes twinkle{from{opacity:.55}to{opacity:1}}
+
+  /* ---- header ---- */
+  header{position:sticky;top:0;z-index:50;
+    background:linear-gradient(120deg,var(--red),var(--red2) 50%,var(--red3));
+    border-bottom:1px solid rgba(255,255,255,.12)}
+  .hd{display:flex;align-items:center;gap:13px;padding:13px 14px;max-width:760px;margin:0 auto;position:relative;z-index:2}
+  .hd img{width:56px;height:56px;border-radius:15px;flex:none;background:#0c1740;
+    box-shadow:0 0 0 2px rgba(255,255,255,.3), 0 5px 18px rgba(0,0,0,.5), 0 0 26px rgba(255,255,255,.4)}
+  .hd .ti h1{font-size:24px;margin:0;letter-spacing:.6px;font-weight:800;color:#fff;
+    text-shadow:0 0 16px rgba(255,255,255,.5)}
+  .hd .ti p{margin:4px 0 0;font-size:14.5px;color:#ffffff;font-style:italic;font-weight:700;letter-spacing:.2px;
+    text-shadow:0 0 14px rgba(255,255,255,.6), 0 1px 2px rgba(0,0,0,.4)}
+  .sync-dot{margin-left:auto;display:flex;align-items:center;gap:6px;font-size:11px;color:#ffd9de}
+  .sync-dot .d{width:9px;height:9px;border-radius:99px;background:var(--muted)}
+  .sync-dot .d.on{background:var(--good);box-shadow:0 0 8px var(--good)}
+  .sync-dot .d.off{background:var(--warn)}
+
+  .view{display:none;padding-top:14px}.view.active{display:block}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:15px;margin:12px 0}
+  .card.navy{background:linear-gradient(160deg,rgba(39,79,176,.55),rgba(16,33,86,.6));border-color:var(--line)}
+
+  /* hero (kamp fotografi arka planli) */
+  .hero-photo{position:relative;border:1px solid var(--line);border-radius:18px;overflow:hidden;
+    background:#0a1740 url('hero.webp') center/cover no-repeat;
+    min-height:330px;display:flex;align-items:center;justify-content:center;
+    padding:26px 14px;margin:12px 0}
+  .hero-photo::before{content:"";position:absolute;inset:0;
+    background:linear-gradient(180deg,rgba(7,12,36,.18) 0%,rgba(7,12,36,.28) 50%,rgba(7,12,36,.42) 100%)}
+  .hero-panel{position:relative;z-index:1;width:100%;max-width:520px;text-align:center;
+    background:rgba(8,16,40,.66);backdrop-filter:blur(4px);
+    border:1px solid rgba(172,193,255,.35);border-radius:16px;padding:16px 15px;
+    box-shadow:0 14px 36px rgba(0,0,0,.5)}
+  .hero-panel .big{font-size:16px;color:#fff;font-weight:700;text-shadow:0 1px 6px rgba(0,0,0,.6)}
+  .hero-panel .motto{font-size:13px;color:#dbe6ff;margin-top:6px;font-style:italic;text-shadow:0 1px 5px rgba(0,0,0,.6)}
+  .cta{display:grid;grid-template-columns:1fr;gap:10px;margin-top:15px}
+  .btn{border:none;border-radius:14px;font-size:16px;font-weight:700;cursor:pointer;padding:15px;display:flex;align-items:center;justify-content:center;gap:9px}
+  .btn-red{background:linear-gradient(120deg,var(--red),var(--red2));color:#fff;box-shadow:0 6px 18px rgba(225,29,42,.35)}
+  .btn-ghost{background:var(--card2);color:var(--txt);border:1px solid var(--line)}
+  .btn-blue{background:linear-gradient(120deg,var(--blue),#2638b8);color:#fff}
+  .btn-sm{padding:10px 13px;font-size:13px;border-radius:11px}
+  .btn:active{transform:scale(.98)}
+  .btn[disabled]{opacity:.55}
+
+  /* ozet rakamlari */
+  .stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .stat{background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:13px}
+  .stat.navy{background:linear-gradient(160deg,rgba(39,79,176,.6),rgba(16,33,86,.62));border-color:var(--line)}
+  .stat .k{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
+  .stat .v{font-size:22px;font-weight:800;margin-top:4px}
+  .stat .v small{font-size:12px;color:var(--muted);font-weight:600}
+
+  .sec-h{display:flex;align-items:center;gap:9px;font-size:12px;font-weight:700;color:var(--muted);
+    margin:20px 4px 9px;text-transform:uppercase;letter-spacing:.6px}
+  .sec-h .ln{flex:1;height:1px;background:var(--line)}
+
+  /* gun + kosu kartlari */
+  .daygrp{margin-bottom:6px}
+  .dayhd{display:flex;align-items:baseline;gap:8px;margin:14px 4px 8px}
+  .dayhd .dt{font-weight:700;font-size:14px}
+  .dayhd .ds{font-size:12px;color:var(--muted);margin-left:auto}
+  .run{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 13px;margin-bottom:9px;cursor:pointer}
+  .run .top{display:flex;align-items:center;gap:9px}
+  .run .nm{font-weight:700;font-size:15px;flex:1}
+  .run .kc{font-weight:800;color:#ff6b76;font-size:14px;white-space:nowrap}
+  .run .ed{margin-left:9px;font-size:13px;color:var(--muted);background:var(--card2);border:1px solid var(--line);
+    border-radius:8px;padding:3px 7px;white-space:nowrap}
+  .run .metrics{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
+  .chip{background:var(--card2);border:1px solid var(--line);border-radius:99px;padding:5px 10px;font-size:12px;color:var(--txt)}
+  .chip b{color:var(--blue2)}
+  .empty{text-align:center;color:var(--muted);padding:26px 12px;font-size:13px}
+
+  /* bar chart */
+  .chart{display:flex;align-items:flex-end;gap:8px;height:120px;padding:6px 2px 0}
+  .chart .col{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;height:100%;justify-content:flex-end}
+  .chart .bar{width:100%;max-width:30px;background:linear-gradient(180deg,var(--red),var(--red2));border-radius:6px 6px 0 0;min-height:3px;transition:height .4s}
+  .chart .bl{font-size:10px;color:var(--muted)}
+  .chart .bv{font-size:10px;color:#ffd9de;font-weight:700}
+
+  /* tablo + filtre */
+  .filterbar{display:flex;gap:8px;margin:14px 0 10px}
+  .fbtn{flex:1;background:var(--card2);border:1px solid var(--line);color:var(--muted);border-radius:11px;
+    padding:11px 8px;font-size:13px;font-weight:700;cursor:pointer}
+  .fbtn.on{background:linear-gradient(120deg,var(--red),var(--red2));color:#fff;border-color:var(--red2);
+    box-shadow:0 4px 14px rgba(225,29,42,.3)}
+  .tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:14px;background:rgba(10,23,64,.5)}
+  table.rt{border-collapse:collapse;width:100%;min-width:760px;font-size:13px}
+  table.rt th,table.rt td{padding:10px 11px;text-align:right;white-space:nowrap;border-bottom:1px solid var(--line)}
+  table.rt th{position:sticky;top:0;z-index:2;background:var(--parliament);color:#fff;font-size:10.5px;
+    text-transform:uppercase;letter-spacing:.3px;font-weight:700}
+  table.rt td:first-child,table.rt th:first-child{text-align:left;position:sticky;left:0;z-index:1;
+    background:#0e2052;border-right:1px solid var(--line);min-width:118px}
+  table.rt th:first-child{z-index:3;background:var(--parliament)}
+  table.rt tbody tr:nth-child(odd) td{background:rgba(255,255,255,.035)}
+  table.rt tbody tr:nth-child(odd) td:first-child{background:#102457}
+  table.rt .d1{font-weight:700;color:#fff}
+  table.rt .d2{display:block;font-size:10px;color:var(--muted);font-weight:400;margin-top:2px}
+  table.rt td.hi{color:#ff8a93;font-weight:700}
+  table.rt .muted{color:var(--muted)}
+  table.rt tr.tot td{background:rgba(39,79,176,.35)!important;font-weight:800;border-top:2px solid var(--parliament2)}
+
+  /* form */
+  .field{margin-bottom:11px}
+  .field label{display:block;font-size:12px;color:var(--muted);margin-bottom:5px}
+  .field input{width:100%;padding:12px;border-radius:11px;border:1px solid var(--line);background:#0b1a44;color:var(--txt);font-size:16px}
+  .field input:focus{outline:none;border-color:var(--parliament2);box-shadow:0 0 0 3px rgba(39,79,176,.3)}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+
+  /* tabbar */
+  .tabbar{position:fixed;bottom:0;left:0;right:0;z-index:60;display:flex;
+    background:rgba(8,18,48,.96);backdrop-filter:blur(8px);border-top:1px solid var(--line)}
+  .tabbar button{flex:1;background:none;border:none;color:var(--muted);padding:9px 4px 11px;font-size:11px;cursor:pointer;
+    display:flex;flex-direction:column;align-items:center;gap:3px}
+  .tabbar button.on{color:#fff}
+  .tabbar button.on .ic{filter:drop-shadow(0 0 7px var(--red))}
+  .tabbar .ic{font-size:20px}
+
+  /* modal */
+  .modal{position:fixed;inset:0;background:rgba(0,0,0,.62);z-index:100;display:none;align-items:flex-end;justify-content:center}
+  .modal.open{display:flex}
+  .sheet{background:linear-gradient(180deg,#132c75,#0a1840);width:100%;max-width:760px;border-radius:22px 22px 0 0;padding:16px 16px 24px;max-height:94vh;overflow:auto;border:1px solid var(--line)}
+  .sheet .grab{width:42px;height:4px;background:var(--line);border-radius:99px;margin:0 auto 14px}
+  .sheet h3{margin:0 0 12px;font-size:17px}
+  .photo-row{display:flex;gap:9px;margin-bottom:10px}
+  .photo-row .btn{flex:1}
+  .status{font-size:13px;color:var(--blue2);min-height:18px;margin:4px 2px 8px;text-align:center}
+  #editPreview{width:100%;border-radius:12px;margin:6px 0 10px;display:none;max-height:230px;object-fit:cover}
+  .hidden{display:none!important}
+  .danger{color:#ff6b7a}
+  .note{font-size:12px;color:var(--muted);line-height:1.5}
+  .codebox{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:18px;letter-spacing:2px;font-weight:800;
+    background:#0b1a44;border:1px solid var(--line);border-radius:11px;padding:12px;text-align:center;color:#fff;user-select:all;
+    text-shadow:0 0 10px rgba(172,193,255,.6)}
+  a{color:var(--blue2)}
+</style>
+</head>
+<body>
+
+<header class="stars">
+  <div class="hd">
+    <img src="logo.svg" alt="RunAdam">
+    <div class="ti">
+      <h1>RunAdam</h1>
+      <p>Gelecek azmedenlere adanmıştır</p>
+    </div>
+    <div class="sync-dot" id="syncDot"><span class="d" id="syncD"></span><span id="syncT">…</span></div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- ================= BUGÜN ================= -->
+  <section class="view active" id="v-bugun">
+    <div class="hero-photo">
+      <div class="hero-panel">
+        <div class="big" id="heroLine">Bugün koşmaya hazır mısın?</div>
+        <div class="motto">"Bugünün terini, yarının zaferine yaz."</div>
+        <div class="cta">
+          <button class="btn btn-red" id="btnPhoto">📷 Koşu bandı fotoğrafını çek</button>
+          <button class="btn btn-ghost btn-sm" id="btnManual">✏️ Elle ekle</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="sec-h"><span>Bu Hafta</span><span class="ln"></span></div>
+    <div class="stat-grid">
+      <div class="stat navy"><div class="k">Mesafe</div><div class="v" id="wkDist">0 <small>km</small></div></div>
+      <div class="stat navy"><div class="k">Süre</div><div class="v" id="wkTime">0<small>dk</small></div></div>
+      <div class="stat"><div class="k">Kalori</div><div class="v" id="wkKcal">0</div></div>
+      <div class="stat"><div class="k">Antrenman</div><div class="v" id="wkCnt">0</div></div>
+    </div>
+
+    <div class="sec-h"><span>Bugünün Antrenmanları</span><span class="ln"></span></div>
+    <div id="todayList"></div>
+  </section>
+
+  <!-- ================= GEÇMİŞ ================= -->
+  <section class="view" id="v-gecmis">
+    <div id="historyList"></div>
+  </section>
+
+  <!-- ================= TABLO ================= -->
+  <section class="view" id="v-tablo">
+    <div class="filterbar">
+      <button class="fbtn on" data-mode="gun">Günlük</button>
+      <button class="fbtn" data-mode="hafta">Haftalık</button>
+      <button class="fbtn" data-mode="ay">Aylık</button>
+    </div>
+    <div id="tableWrap"></div>
+  </section>
+
+  <!-- ================= İSTATİSTİK ================= -->
+  <section class="view" id="v-istatistik">
+    <div class="sec-h"><span>Toplam</span><span class="ln"></span></div>
+    <div class="stat-grid">
+      <div class="stat"><div class="k">Toplam Mesafe</div><div class="v" id="tDist">0 <small>km</small></div></div>
+      <div class="stat"><div class="k">Toplam Süre</div><div class="v" id="tTime">0 <small>sa</small></div></div>
+      <div class="stat"><div class="k">Toplam Kalori</div><div class="v" id="tKcal">0</div></div>
+      <div class="stat"><div class="k">Antrenman</div><div class="v" id="tCnt">0</div></div>
+    </div>
+    <div class="stat-grid" style="margin-top:10px">
+      <div class="stat navy"><div class="k">🔥 Seri (gün)</div><div class="v" id="tStreak">0</div></div>
+      <div class="stat navy"><div class="k">En İyi Tempo</div><div class="v" id="tPace">—</div></div>
+    </div>
+
+    <div class="sec-h"><span>Son 7 Gün — Mesafe (km)</span><span class="ln"></span></div>
+    <div class="card navy stars">
+      <div class="chart" id="chart7"></div>
+    </div>
+  </section>
+
+  <!-- ================= AYARLAR ================= -->
+  <section class="view" id="v-ayarlar">
+    <div class="sec-h"><span>Bulut Senkron (Drive gibi)</span><span class="ln"></span></div>
+    <div class="card navy stars">
+      <p class="note">Bu <b>senkron kodun</b>. Başka bir telefon ya da bilgisayarda RunAdam'ı aç,
+        aynı kodu gir; verilerin <b>otomatik olarak</b> her iki cihazda da güncellenir.</p>
+      <div class="codebox" id="codeBox">------</div>
+      <div class="grid3" style="margin-top:10px">
+        <button class="btn btn-ghost btn-sm" id="btnCopyCode">📋 Kopyala</button>
+        <button class="btn btn-blue btn-sm" id="btnSetCode">🔗 Kod gir</button>
+        <button class="btn btn-ghost btn-sm" id="btnSyncNow">🔄 Senkron</button>
+      </div>
+      <p class="note" id="syncInfo" style="margin-top:10px">—</p>
+    </div>
+
+    <div class="sec-h"><span>Yedek (Drive'a Dosya)</span><span class="ln"></span></div>
+    <div class="card">
+      <p class="note">Verilerini <b>JSON dosyası</b> olarak indir, Google Drive'a yükleyip sakla.
+        Gerektiğinde geri yükle.</p>
+      <div class="grid2" style="margin-top:10px">
+        <button class="btn btn-ghost btn-sm" id="btnExport">⬇️ Yedek indir</button>
+        <button class="btn btn-ghost btn-sm" id="btnImport">⬆️ Yedek yükle</button>
+      </div>
+    </div>
+
+    <div class="sec-h"><span>Uygulama</span><span class="ln"></span></div>
+    <div class="card">
+      <p class="note">RunAdam — koşu bandı / kardiyo ekranının fotoğrafını çek, aktiviteni otomatik kaydet.
+        Telefonda "Ana ekrana ekle" ile uygulama gibi kullan.<br><br>
+        <i>"Gelecek azmedenlere adanmıştır."</i></p>
+      <button class="btn btn-ghost btn-sm danger" id="btnWipe" style="margin-top:10px">🗑️ Tüm verileri sil</button>
+    </div>
+  </section>
+
+</div>
+
+<!-- ===== TAB BAR ===== -->
+<nav class="tabbar">
+  <button class="on" data-view="bugun"><span class="ic">🏃</span>Bugün</button>
+  <button data-view="gecmis"><span class="ic">📅</span>Geçmiş</button>
+  <button data-view="tablo"><span class="ic">📋</span>Tablo</button>
+  <button data-view="istatistik"><span class="ic">📊</span>İstatistik</button>
+  <button data-view="ayarlar"><span class="ic">⚙️</span>Ayarlar</button>
+</nav>
+
+<!-- ===== KAYIT / DÜZENLE MODAL ===== -->
+<div class="modal" id="editModal">
+  <div class="sheet">
+    <div class="grab"></div>
+    <h3 id="editTitle">Antrenman Ekle</h3>
+
+    <div class="photo-row">
+      <button class="btn btn-red btn-sm" id="mPhoto">📷 Fotoğraf</button>
+      <button class="btn btn-ghost btn-sm" id="mGallery">🖼️ Galeri</button>
+    </div>
+    <input type="file" id="fileCam" accept="image/*" capture="environment" class="hidden">
+    <input type="file" id="fileGal" accept="image/*" class="hidden">
+    <div class="status" id="editStatus"></div>
+    <img id="editPreview" alt="önizleme">
+
+    <div class="grid2">
+      <div class="field"><label>Tarih</label><input type="date" id="f_date"></div>
+      <div class="field"><label>Aktivite</label><input type="text" id="f_name" placeholder="Koşu Bandı"></div>
+    </div>
+    <p class="note" style="margin:-2px 2px 10px">Tüm değerler elle girilebilir; sensör/ölçüm hatası olursa düzeltip kaydedebilirsin.</p>
+    <div class="grid3">
+      <div class="field"><label>Süre (s:dk:sn)</label><input type="text" id="f_dur" inputmode="numeric" placeholder="1:00:05"></div>
+      <div class="field"><label>Mesafe (km)</label><input type="text" id="f_dist" inputmode="decimal" placeholder="10.23"></div>
+      <div class="field"><label>Kalori</label><input type="text" id="f_kcal" inputmode="numeric" placeholder="808"></div>
+    </div>
+    <div class="grid3">
+      <div class="field"><label>Ort. Tempo (dk/km)</label><input type="text" id="f_pace" inputmode="numeric" placeholder="5:52"></div>
+      <div class="field"><label>Ort. Hız (km/sa)</label><input type="text" id="f_speed" inputmode="decimal" placeholder="10.2"></div>
+      <div class="field"><label>Ort. Nabız (bpm)</label><input type="text" id="f_hr" inputmode="numeric" placeholder="161"></div>
+    </div>
+    <div class="grid3">
+      <div class="field"><label>Ort. Eğim (%)</label><input type="text" id="f_incline" inputmode="decimal" placeholder="-"></div>
+      <div class="field"><label>Tırmanılan (m)</label><input type="text" id="f_climb" inputmode="numeric" placeholder="-"></div>
+      <div class="field"><label>Ort. Watt</label><input type="text" id="f_watt" inputmode="numeric" placeholder="199"></div>
+    </div>
+    <div class="grid3">
+      <div class="field"><label>Ort. METs</label><input type="text" id="f_mets" inputmode="decimal" placeholder="105"></div>
+      <div class="field"></div><div class="field"></div>
+    </div>
+
+    <button class="btn btn-red" id="mSave" style="margin-top:6px">💾 Kaydet</button>
+    <button class="btn btn-ghost btn-sm danger hidden" id="mDelete" style="margin-top:9px">🗑️ Bu antrenmanı sil</button>
+    <button class="btn btn-ghost btn-sm" id="mCancel" style="margin-top:9px">Vazgeç</button>
+  </div>
+</div>
+
+<input type="file" id="importFile" accept="application/json,.json" class="hidden">
+
+<script>
+"use strict";
+/* ---------------- yardimcilar ---------------- */
+const $ = id => document.getElementById(id);
+function uid(){return 'r'+Math.random().toString(36).slice(2,10)+Date.now().toString(36).slice(-3)}
+function now(){return Date.now()}
+function todayKey(){return fmtKey(new Date())}
+function fmtKey(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function parseKey(s){const[a,b,c]=s.split('-').map(Number);return new Date(a,b-1,c)}
+function r1(n){return Math.round(n*10)/10}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function numTR(s){if(s==null)return 0;const v=parseFloat(String(s).replace(',','.').replace(/[^\d.\-]/g,''));return isNaN(v)?0:v}
+
+function fmtDur(sec){sec=Math.round(sec||0);const h=Math.floor(sec/3600),m=Math.floor((sec%3600)/60),s=sec%60;
+  return h>0?`${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`:`${m}:${String(s).padStart(2,'0')}`}
+function parseDur(str){if(!str)return 0;const p=String(str).trim().split(':').map(x=>parseInt(x,10)||0);
+  if(p.length===3)return p[0]*3600+p[1]*60+p[2];if(p.length===2)return p[0]*60+p[1];return (parseInt(str,10)||0)*60}
+function fmtPace(sec){if(!sec)return '—';sec=Math.round(sec);return `${Math.floor(sec/60)}:${String(sec%60).padStart(2,'0')}`}
+function parsePace(str){if(!str)return 0;const p=String(str).trim().split(':').map(x=>parseInt(x,10)||0);
+  if(p.length===2)return p[0]*60+p[1];return Math.round(numTR(str)*60)}
+function fmtDateLong(key){try{return parseKey(key).toLocaleDateString('tr-TR',{day:'2-digit',month:'long',year:'numeric',weekday:'long'})}catch(e){return key}}
+
+/* ---------------- durum / depo ---------------- */
+const LS='runadam_db_v1', LS_CODE='runadam_synccode';
+let db={runs:[],deleted:[]};
+let view='bugun', editId=null, lastPhoto=null;
+
+function load(){try{const d=JSON.parse(localStorage.getItem(LS));if(d&&Array.isArray(d.runs))db=d;}catch(e){}
+  if(!db.deleted)db.deleted=[]; }
+function saveLocal(){localStorage.setItem(LS,JSON.stringify(db))}
+
+/* ---------------- senkron kodu ---------------- */
+function getCode(){let c=localStorage.getItem(LS_CODE);
+  if(!c){c=(Math.random().toString(36).slice(2,6)+Math.random().toString(36).slice(2,6)).toUpperCase();localStorage.setItem(LS_CODE,c);}
+  return c;}
+function setCode(c){localStorage.setItem(LS_CODE,c.toUpperCase());}
+function kvKey(){return 'runadam_'+getCode()}
+
+/* ---------------- bulut senkron ---------------- */
+let syncing=false, pushTimer=null;
+function setSyncUI(state,txt){const d=$('syncD');d.className='d '+state;$('syncT').textContent=txt||'';}
+
+function mergeDb(local,remote){
+  if(!remote||!Array.isArray(remote.runs))return local;
+  const del=new Set([...(local.deleted||[]),...(remote.deleted||[])]);
+  const byId={};
+  [...remote.runs,...local.runs].forEach(r=>{
+    if(!r||!r.id||del.has(r.id))return;
+    const ex=byId[r.id];
+    if(!ex||(r.editedAt||0)>=(ex.editedAt||0))byId[r.id]=r;
+  });
+  return {runs:Object.values(byId),deleted:[...del]};
+}
+
+async function pullSync(){
+  try{
+    const r=await fetch('/api/kv/'+kvKey());
+    if(!r.ok)throw 0;
+    const j=await r.json();
+    if(j&&j.ok&&j.data){ db=mergeDb(db,j.data); saveLocal(); }
+    return true;
+  }catch(e){return false;}
+}
+async function pushSync(){
+  try{
+    const r=await fetch('/api/kv/'+kvKey(),{method:'PUT',headers:{'content-type':'application/json'},
+      body:JSON.stringify({data:{runs:db.runs,deleted:db.deleted}})});
+    return r.ok;
+  }catch(e){return false;}
+}
+function schedulePush(){clearTimeout(pushTimer);pushTimer=setTimeout(()=>doSync(),700);}
+async function doSync(){
+  if(syncing)return; syncing=true; setSyncUI('','senkron…');
+  const okP=await pullSync();        // once uzaktakini al + birlestir
+  const okU=okP&&await pushSync();    // sonra birlesik halini yaz
+  syncing=false;
+  if(okP&&okU){setSyncUI('on','senkron');$('syncInfo').textContent='✓ Son senkron: '+new Date().toLocaleTimeString('tr-TR');}
+  else{setSyncUI('off','çevrimdışı');$('syncInfo').textContent='⚠️ Sunucuya ulaşılamadı — veriler bu cihazda saklı, internet gelince eşitlenir.';}
+  render();
+}
+
+/* ---------------- hesaplar ---------------- */
+function allRuns(){return db.runs.slice().sort((a,b)=>(b.date+(b.createdAt||0)).localeCompare?b.date.localeCompare(a.date)||(b.createdAt||0)-(a.createdAt||0):0)}
+function runsByDate(){const m={};db.runs.forEach(r=>{(m[r.date]=m[r.date]||[]).push(r)});return m;}
+function weekStart(){const d=new Date();const day=(d.getDay()+6)%7;d.setHours(0,0,0,0);d.setDate(d.getDate()-day);return d;}
+function sumRange(fromDate){let dist=0,sec=0,kcal=0,cnt=0;
+  db.runs.forEach(r=>{if(!fromDate||parseKey(r.date)>=fromDate){dist+=+r.distance||0;sec+=+r.durationSec||0;kcal+=+r.kcal||0;cnt++;}});
+  return {dist,sec,kcal,cnt};}
+function streak(){const set=new Set(db.runs.map(r=>r.date));let s=0,d=new Date();
+  for(;;){if(set.has(fmtKey(d))){s++;d.setDate(d.getDate()-1);}else{
+    // bugun bos olabilir; dunden baslat
+    if(s===0&&fmtKey(d)===todayKey()){d.setDate(d.getDate()-1);continue;}break;}}
+  return s;}
+function bestPace(){let best=0;db.runs.forEach(r=>{if(r.paceSec>0&&(best===0||r.paceSec<best))best=r.paceSec;});return best;}
+
+/* ---------------- toplama (gun/hafta/ay) ---------------- */
+function aggRuns(runs){
+  const sum=f=>runs.reduce((s,r)=>s+(+r[f]||0),0);
+  function wavg(f){let n=0,d=0;runs.forEach(r=>{const v=+r[f]||0,w=(+r.durationSec||0)||1;if(v>0){n+=v*w;d+=w;}});return d?n/d:0;}
+  const sec=sum('durationSec'),dist=sum('distance'),kcal=sum('kcal'),climb=sum('climb');
+  const pace=(dist>0&&sec>0)?sec/dist:wavg('paceSec');
+  const speed=(sec>0&&dist>0)?dist/(sec/3600):wavg('speed');
+  return {sec,dist,kcal,climb,pace,speed,hr:wavg('hr'),incline:wavg('incline'),watt:wavg('watt'),mets:wavg('mets'),cnt:runs.length};
+}
+function mondayOf(key){const d=parseKey(key);const off=(d.getDay()+6)%7;d.setDate(d.getDate()-off);return d;}
+const MONTHS=['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
+function groupRuns(mode){
+  const g={};
+  db.runs.forEach(r=>{
+    let key,label,sub;
+    if(mode==='ay'){const d=parseKey(r.date);key=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+      label=MONTHS[d.getMonth()]+' '+d.getFullYear();}
+    else if(mode==='hafta'){const m=mondayOf(r.date);const s=new Date(m);const e=new Date(m);e.setDate(e.getDate()+6);
+      key=fmtKey(m);const f=x=>String(x.getDate()).padStart(2,'0')+'.'+String(x.getMonth()+1).padStart(2,'0');
+      label=f(s)+'–'+f(e);sub='Hafta';}
+    else{const d=parseKey(r.date);key=r.date;
+      label=String(d.getDate()).padStart(2,'0')+'.'+String(d.getMonth()+1).padStart(2,'0')+'.'+d.getFullYear();
+      sub=d.toLocaleDateString('tr-TR',{weekday:'long'});}
+    (g[key]=g[key]||{label,sub,runs:[]}).runs.push(r);
+  });
+  return Object.keys(g).sort((a,b)=>b.localeCompare(a)).map(k=>({key:k,...g[k],agg:aggRuns(g[k].runs)}));
+}
+let tableMode='gun';
+function renderTable(){
+  const rows=groupRuns(tableMode);
+  const head=['Tarih','Süre','Mesafe','Kalori','Tempo','Hız','Nabız','Eğim','Tırmanış','Watt','METs'];
+  if(!rows.length){$('tableWrap').innerHTML='<div class="empty">Henüz veri yok.<br>Antrenman ekledikçe tablo dolacak.</div>';return;}
+  const cell=(v,hi)=>`<td${hi?' class="hi"':''}>${v}</td>`;
+  const dash=v=>v?v:'<span class="muted">–</span>';
+  const body=rows.map(row=>{const a=row.agg;
+    return `<tr>
+      <td><span class="d1">${esc(row.label)}</span><span class="d2">${esc(row.sub||'')}${row.runs.length>1?' · '+row.runs.length+' antr.':''}</span></td>
+      ${cell(a.sec?fmtDur(a.sec):dash(0))}
+      ${cell(a.dist?r1(a.dist)+' km':dash(0))}
+      ${cell(a.kcal?Math.round(a.kcal):dash(0),true)}
+      ${cell(a.pace?fmtPace(a.pace):dash(0))}
+      ${cell(a.speed?r1(a.speed):dash(0))}
+      ${cell(a.hr?Math.round(a.hr):dash(0))}
+      ${cell(a.incline?r1(a.incline)+'%':dash(0))}
+      ${cell(a.climb?Math.round(a.climb)+'m':dash(0))}
+      ${cell(a.watt?Math.round(a.watt):dash(0))}
+      ${cell(a.mets?r1(a.mets):dash(0))}
+    </tr>`;}).join('');
+  // toplam satiri
+  const t=aggRuns(db.runs);
+  const tot=`<tr class="tot">
+    <td>TOPLAM</td>${cell(fmtDur(t.sec))}${cell(r1(t.dist)+' km')}${cell(Math.round(t.kcal),true)}
+    ${cell(t.pace?fmtPace(t.pace):'–')}${cell(t.speed?r1(t.speed):'–')}${cell(t.hr?Math.round(t.hr):'–')}
+    ${cell(t.incline?r1(t.incline)+'%':'–')}${cell(t.climb?Math.round(t.climb)+'m':'–')}
+    ${cell(t.watt?Math.round(t.watt):'–')}${cell(t.mets?r1(t.mets):'–')}</tr>`;
+  $('tableWrap').innerHTML=`<div class="tbl-wrap"><table class="rt"><thead><tr>${head.map(h=>'<th>'+h+'</th>').join('')}</tr></thead>
+    <tbody>${body}${tot}</tbody></table></div>`;
+}
+
+/* ---------------- render ---------------- */
+function render(){renderToday();renderHistory();renderTable();renderStats();renderSettings();}
+
+function runMetricsHtml(r){
+  const c=[];
+  if(r.distance)c.push(`<span class="chip"><b>${r1(r.distance)}</b> km</span>`);
+  if(r.durationSec)c.push(`<span class="chip">⏱ <b>${fmtDur(r.durationSec)}</b></span>`);
+  if(r.paceSec)c.push(`<span class="chip">⚡ <b>${fmtPace(r.paceSec)}</b>/km</span>`);
+  if(r.speed)c.push(`<span class="chip">🏁 <b>${r1(r.speed)}</b> km/sa</span>`);
+  if(r.hr)c.push(`<span class="chip">❤️ <b>${r.hr}</b></span>`);
+  if(r.incline)c.push(`<span class="chip">📈 <b>${r1(r.incline)}%</b></span>`);
+  if(r.climb)c.push(`<span class="chip">⛰ <b>${Math.round(r.climb)}m</b></span>`);
+  if(r.watt)c.push(`<span class="chip">🔌 <b>${Math.round(r.watt)}W</b></span>`);
+  if(r.mets)c.push(`<span class="chip">METs <b>${r1(r.mets)}</b></span>`);
+  return c.join('');
+}
+function runCard(r){
+  return `<div class="run" data-id="${r.id}">
+    <div class="top"><span class="nm">${esc(r.name||'Antrenman')}</span><span class="kc">🔥 ${Math.round(r.kcal||0)} kcal</span><span class="ed">✏️ Düzenle</span></div>
+    <div class="metrics">${runMetricsHtml(r)}</div></div>`;
+}
+
+function renderToday(){
+  const wk=sumRange(weekStart());
+  $('wkDist').innerHTML=r1(wk.dist)+' <small>km</small>';
+  $('wkTime').innerHTML=Math.round(wk.sec/60)+'<small>dk</small>';
+  $('wkKcal').textContent=Math.round(wk.kcal);
+  $('wkCnt').textContent=wk.cnt;
+  const today=(runsByDate()[todayKey()]||[]);
+  $('heroLine').textContent = today.length?`Bugün ${today.length} antrenman tamamladın 💪`:'Bugün koşmaya hazır mısın?';
+  $('todayList').innerHTML = today.length?today.map(runCard).join(''):'<div class="empty">Bugün henüz antrenman yok.<br>Yukarıdan fotoğraf çekip ekleyebilirsin.</div>';
+  bindRunCards($('todayList'));
+}
+function renderHistory(){
+  const m=runsByDate();const dates=Object.keys(m).sort((a,b)=>b.localeCompare(a));
+  if(!dates.length){$('historyList').innerHTML='<div class="empty">Henüz kayıt yok.<br>İlk antrenmanını ekle, geçmişin burada birikecek.</div>';return;}
+  $('historyList').innerHTML=dates.map(dt=>{
+    const runs=m[dt].slice().sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+    const kc=runs.reduce((s,r)=>s+(+r.kcal||0),0),di=runs.reduce((s,r)=>s+(+r.distance||0),0);
+    return `<div class="daygrp"><div class="dayhd"><span class="dt">${esc(fmtDateLong(dt))}</span>
+      <span class="ds">${r1(di)} km · ${Math.round(kc)} kcal</span></div>
+      ${runs.map(runCard).join('')}</div>`;
+  }).join('');
+  bindRunCards($('historyList'));
+}
+function renderStats(){
+  const t=sumRange(null);
+  $('tDist').innerHTML=r1(t.dist)+' <small>km</small>';
+  $('tTime').innerHTML=r1(t.sec/3600)+' <small>sa</small>';
+  $('tKcal').textContent=Math.round(t.kcal);
+  $('tCnt').textContent=t.cnt;
+  $('tStreak').textContent=streak();
+  $('tPace').textContent=bestPace()?fmtPace(bestPace())+' /km':'—';
+  // son 7 gun
+  const days=[];for(let i=6;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);days.push(fmtKey(d));}
+  const m=runsByDate();
+  const vals=days.map(k=>(m[k]||[]).reduce((s,r)=>s+(+r.distance||0),0));
+  const max=Math.max(1,...vals);
+  $('chart7').innerHTML=days.map((k,i)=>{
+    const h=Math.round(vals[i]/max*100);const lbl=parseKey(k).toLocaleDateString('tr-TR',{weekday:'short'});
+    return `<div class="col"><span class="bv">${vals[i]?r1(vals[i]):''}</span>
+      <div class="bar" style="height:${vals[i]?Math.max(4,h):2}%"></div><span class="bl">${lbl}</span></div>`;
+  }).join('');
+}
+function renderSettings(){$('codeBox').textContent=getCode();}
+
+function bindRunCards(root){root.querySelectorAll('.run').forEach(el=>el.onclick=()=>openEdit(el.dataset.id));}
+
+/* ---------------- modal: ekle / duzenle ---------------- */
+function openAdd(){
+  editId=null;lastPhoto=null;
+  $('editTitle').textContent='Antrenman Ekle';
+  $('f_date').value=todayKey();$('f_name').value='Koşu Bandı';
+  ['f_dur','f_dist','f_kcal','f_pace','f_speed','f_hr','f_incline','f_climb','f_watt','f_mets'].forEach(id=>$(id).value='');
+  $('editStatus').textContent='';$('editPreview').style.display='none';
+  $('mDelete').classList.add('hidden');
+  $('editModal').classList.add('open');
+}
+function openEdit(id){
+  const r=db.runs.find(x=>x.id===id);if(!r)return;
+  editId=id;lastPhoto=null;
+  $('editTitle').textContent='Antrenmanı Düzenle';
+  $('f_date').value=r.date;$('f_name').value=r.name||'';
+  $('f_dur').value=r.durationSec?fmtDur(r.durationSec):'';
+  $('f_dist').value=r.distance||'';$('f_kcal').value=r.kcal||'';
+  $('f_pace').value=r.paceSec?fmtPace(r.paceSec):'';
+  $('f_speed').value=r.speed||'';
+  $('f_hr').value=r.hr||'';$('f_incline').value=r.incline||'';
+  $('f_climb').value=r.climb||'';$('f_watt').value=r.watt||'';$('f_mets').value=r.mets||'';
+  $('editStatus').textContent='';$('editPreview').style.display='none';
+  $('mDelete').classList.remove('hidden');
+  $('editModal').classList.add('open');
+}
+function closeEdit(){$('editModal').classList.remove('open');}
+
+function saveRun(){
+  const date=$('f_date').value||todayKey();
+  const name=$('f_name').value.trim()||'Koşu Bandı';
+  let durationSec=parseDur($('f_dur').value);
+  const distance=numTR($('f_dist').value);
+  const kcal=Math.round(numTR($('f_kcal').value));
+  let paceSec=parsePace($('f_pace').value);
+  let speed=numTR($('f_speed').value);
+  // tempo/hiz bossa mesafe+sureden hesapla; biri varsa digerini turet
+  if(!paceSec&&distance>0&&durationSec>0)paceSec=Math.round(durationSec/distance);
+  if(!speed&&distance>0&&durationSec>0)speed=r1(distance/(durationSec/3600));
+  if(!speed&&paceSec>0)speed=r1(3600/paceSec);
+  if(!paceSec&&speed>0)paceSec=Math.round(3600/speed);
+  const hr=Math.round(numTR($('f_hr').value));
+  const incline=numTR($('f_incline').value);
+  const climb=numTR($('f_climb').value);
+  const watt=Math.round(numTR($('f_watt').value));
+  const mets=numTR($('f_mets').value);
+  if(!distance&&!durationSec&&!kcal){alert('En az süre, mesafe ya da kalori gir.');return;}
+  const rec={id:editId||uid(),date,name,durationSec,distance,kcal,paceSec,speed,hr,incline,climb,watt,mets,editedAt:now()};
+  if(editId){const i=db.runs.findIndex(x=>x.id===editId);if(i>=0){rec.createdAt=db.runs[i].createdAt||now();db.runs[i]=rec;}}
+  else{rec.createdAt=now();db.runs.push(rec);}
+  saveLocal();closeEdit();view='bugun';setActiveTab();render();schedulePush();
+}
+function deleteRun(){
+  if(!editId||!confirm('Bu antrenman silinsin mi?'))return;
+  db.runs=db.runs.filter(r=>r.id!==editId);
+  if(!db.deleted.includes(editId))db.deleted.push(editId);
+  saveLocal();closeEdit();render();schedulePush();
+}
+
+/* ---------------- fotograf -> otomatik doldur ---------------- */
+function downscaleImage(file,maxDim,quality){
+  return new Promise((resolve,reject)=>{
+    const img=new Image(),url=URL.createObjectURL(file);
+    img.onload=()=>{let w=img.width,h=img.height;const s=Math.min(1,maxDim/Math.max(w,h));
+      w=Math.round(w*s);h=Math.round(h*s);const c=document.createElement('canvas');c.width=w;c.height=h;
+      c.getContext('2d').drawImage(img,0,0,w,h);URL.revokeObjectURL(url);
+      const dataUrl=c.toDataURL('image/jpeg',quality);resolve({base64:dataUrl.split(',')[1],mediaType:'image/jpeg',dataUrl});};
+    img.onerror=()=>{URL.revokeObjectURL(url);reject(new Error('img'));};img.src=url;});
+}
+async function analyzePhoto(file){
+  if(!file)return;
+  const st=$('editStatus');st.textContent='🖼️ Fotoğraf hazırlanıyor…';
+  try{
+    const {base64,mediaType,dataUrl}=await downscaleImage(file,1280,0.75);
+    const pv=$('editPreview');pv.src=dataUrl;pv.style.display='block';
+    st.textContent='🤖 Ekran okunuyor…';
+    const ctrl=new AbortController();const to=setTimeout(()=>ctrl.abort(),45000);
+    const r=await fetch('/api/vision-activity',{method:'POST',headers:{'content-type':'application/json'},
+      body:JSON.stringify({image:base64,mediaType}),signal:ctrl.signal});
+    clearTimeout(to);
+    if(r.status===503){st.innerHTML='⚠️ Otomatik okuma kapalı (sunucuda <b>ANTHROPIC_API_KEY</b> gerekli). Değerleri elle gir.';return;}
+    if(!r.ok){st.textContent='⚠️ Okunamadı. Değerleri elle gir.';return;}
+    const d=await r.json();
+    if(d.name)$('f_name').value=d.name;
+    if(+d.durationSec)$('f_dur').value=fmtDur(d.durationSec);
+    if(+d.distance)$('f_dist').value=r1(d.distance);
+    if(+d.kcal)$('f_kcal').value=Math.round(d.kcal);
+    if(+d.avgPaceSec)$('f_pace').value=fmtPace(d.avgPaceSec);
+    if(+d.avgSpeed)$('f_speed').value=r1(d.avgSpeed);
+    if(+d.avgHr)$('f_hr').value=Math.round(d.avgHr);
+    if(+d.incline)$('f_incline').value=r1(d.incline);
+    if(+d.climb)$('f_climb').value=Math.round(d.climb);
+    if(+d.watt)$('f_watt').value=Math.round(d.watt);
+    if(+d.mets)$('f_mets').value=r1(d.mets);
+    st.textContent='✓ Okundu — kontrol edip kaydet.';
+  }catch(e){st.textContent=e.name==='AbortError'?'⚠️ Süre aşıldı, elle gir.':'⚠️ Okuma başarısız, elle gir.';}
+}
+
+/* ---------------- yedek ---------------- */
+function exportBackup(){
+  const blob=new Blob([JSON.stringify({runs:db.runs,deleted:db.deleted,exportedAt:new Date().toISOString()},null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='runadam-yedek-'+todayKey()+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+}
+function importBackup(file){
+  const rd=new FileReader();
+  rd.onload=()=>{try{const d=JSON.parse(rd.result);if(!d||!Array.isArray(d.runs))throw 0;
+    db=mergeDb(db,d);saveLocal();render();schedulePush();alert('Yedek yüklendi ✓');}
+    catch(e){alert('Geçersiz yedek dosyası.');}};
+  rd.readAsText(file);
+}
+
+/* ---------------- gezinme ---------------- */
+function setActiveTab(){
+  document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active',v.id==='v-'+view));
+  document.querySelectorAll('.tabbar button').forEach(b=>b.classList.toggle('on',b.dataset.view===view));
+  window.scrollTo(0,0);
+}
+
+/* ---------------- olaylar ---------------- */
+document.querySelectorAll('.tabbar button').forEach(b=>b.onclick=()=>{view=b.dataset.view;setActiveTab();});
+$('btnPhoto').onclick=()=>{openAdd();setTimeout(()=>$('fileCam').click(),60);};
+$('btnManual').onclick=openAdd;
+$('mPhoto').onclick=()=>$('fileCam').click();
+$('mGallery').onclick=()=>$('fileGal').click();
+$('fileCam').onchange=e=>{if(e.target.files[0])analyzePhoto(e.target.files[0]);e.target.value='';};
+$('fileGal').onchange=e=>{if(e.target.files[0])analyzePhoto(e.target.files[0]);e.target.value='';};
+$('mSave').onclick=saveRun;
+$('mDelete').onclick=deleteRun;
+$('mCancel').onclick=closeEdit;
+$('editModal').onclick=e=>{if(e.target.id==='editModal')closeEdit();};
+
+$('btnCopyCode').onclick=()=>{navigator.clipboard?.writeText(getCode());$('syncInfo').textContent='Kod kopyalandı: '+getCode();};
+$('btnSetCode').onclick=async()=>{const c=prompt('Diğer cihazdaki senkron kodunu gir (verileri birleştirir):',getCode());
+  if(c&&c.trim()){setCode(c.trim());renderSettings();await doSync();}};
+$('btnSyncNow').onclick=doSync;
+document.querySelectorAll('.fbtn').forEach(b=>b.onclick=()=>{
+  tableMode=b.dataset.mode;
+  document.querySelectorAll('.fbtn').forEach(x=>x.classList.toggle('on',x===b));
+  renderTable();
+});
+$('btnExport').onclick=exportBackup;
+$('btnImport').onclick=()=>$('importFile').click();
+$('importFile').onchange=e=>{if(e.target.files[0])importBackup(e.target.files[0]);e.target.value='';};
+$('btnWipe').onclick=()=>{if(confirm('TÜM antrenman verileri bu cihazdan ve buluttan silinsin mi? Geri alınamaz.')){
+  db.runs.forEach(r=>{if(!db.deleted.includes(r.id))db.deleted.push(r.id);});db.runs=[];saveLocal();render();schedulePush();}};
+
+/* ---------------- baslat ---------------- */
+load();render();
+getCode();renderSettings();
+doSync(); // acilista bulutla esitle
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+// uygulama one gelince tekrar cek (mobilde otomatik guncelleme)
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)doSync();});
+</script>
+</body>
+</html>

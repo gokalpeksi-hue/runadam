@@ -1,0 +1,21 @@
+{
+  "name": "runadam",
+  "version": "1.0.0",
+  "description": "RunAdam — kosu bandi/kardiyo ekraninin fotografini cek, aktiviteni otomatik kaydet. Gelecek azmedenlere adanmistir.",
+  "main": "server/index.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "node --watch server/index.js"
+  },
+  "keywords": ["running", "treadmill", "fitness", "pwa", "vision"],
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "pg": "^8.12.0"
+  }
+}

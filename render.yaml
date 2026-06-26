@@ -1,0 +1,20 @@
+# Render.com deploy ayari (Blueprint)
+# Render bu dosyayi okuyup web servisini otomatik olusturur.
+# Ortam degiskenleri GUVENLIK nedeniyle burada YAZILMAZ; Render panelinde elle girilir.
+services:
+  - type: web
+    name: runadam
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      # Kosu bandi fotografi okuma (Claude vision) - zorunlu
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      # Opsiyonel: daha ucuz model (orn. claude-haiku-4-5)
+      - key: VISION_MODEL
+        sync: false
+      # Opsiyonel: kalici Postgres (yoksa yerel dosya)
+      - key: DATABASE_URL
+        sync: false
