@@ -13,6 +13,8 @@
 <link rel="icon" type="image/svg+xml" href="logo.svg">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <title>RunAdam</title>
+<!-- Google Drive yedek icin Google Identity Services -->
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
   :root{
     --space:#0a1740; --space2:#102a6b; --parliament:#1b3a8f; --parliament2:#274fb0;
@@ -290,6 +292,25 @@
       <div class="grid2" style="margin-top:10px">
         <button class="btn btn-ghost btn-sm" id="btnExport">⬇️ Yedek indir</button>
         <button class="btn btn-ghost btn-sm" id="btnImport">⬆️ Yedek yükle</button>
+      </div>
+    </div>
+
+    <div class="sec-h"><span>Google Drive</span><span class="ln"></span></div>
+    <div class="card navy stars">
+      <p class="note">Verilerini tek dokunuşla <b>Google Drive'ına</b> yedekle, istediğinde geri yükle.
+        İlk kez kullanmadan önce bir <b>Google Client ID</b> girmen gerekir (aşağıda nasıl alınacağı yazıyor).</p>
+      <div class="grid2" style="margin-top:10px">
+        <button class="btn btn-blue btn-sm" id="btnDriveBackup">☁️ Drive'a yedekle</button>
+        <button class="btn btn-ghost btn-sm" id="btnDriveRestore">⬇️ Drive'dan geri yükle</button>
+      </div>
+      <p class="status" id="driveStatus" style="text-align:left;margin:9px 2px 0"></p>
+      <div id="driveSetup" style="margin-top:8px">
+        <div class="field"><label>Google Client ID</label>
+          <input type="text" id="f_clientid" placeholder="xxxxx.apps.googleusercontent.com" autocomplete="off"></div>
+        <div class="grid2">
+          <button class="btn btn-ghost btn-sm" id="btnSaveClientId">💾 Kaydet</button>
+          <button class="btn btn-ghost btn-sm" id="btnDriveHelp">❓ Nasıl alınır?</button>
+        </div>
       </div>
     </div>
 
@@ -586,7 +607,8 @@ function renderStats(){
       <div class="bar" style="height:${vals[i]?Math.max(4,h):2}%"></div><span class="bl">${lbl}</span></div>`;
   }).join('');
 }
-function renderSettings(){$('codeBox').textContent=getCode();}
+function renderSettings(){$('codeBox').textContent=getCode();
+  const ci=$('f_clientid'); if(ci&&!ci.value)ci.value=driveClientId();}
 
 function bindRunCards(root){root.querySelectorAll('.run').forEach(el=>el.onclick=()=>openEdit(el.dataset.id));}
 
@@ -701,6 +723,76 @@ function importBackup(file){
   rd.readAsText(file);
 }
 
+/* ---------------- Google Drive yedek ---------------- */
+const LS_GID='runadam_gclientid', DRIVE_FILE='runadam-yedek.json';
+let _tokenClient=null, _accessToken='';
+function driveClientId(){return (localStorage.getItem(LS_GID)||'').trim();}
+function dStatus(t){const e=$('driveStatus');if(e)e.textContent=t||'';}
+function getDriveToken(){
+  return new Promise((resolve,reject)=>{
+    const cid=driveClientId();
+    if(!cid)return reject(new Error('no_client_id'));
+    if(!(window.google&&google.accounts&&google.accounts.oauth2))return reject(new Error('gis_yok'));
+    const cb=(r)=>{ if(r&&r.error)return reject(new Error(r.error)); _accessToken=r.access_token; resolve(_accessToken); };
+    if(!_tokenClient){
+      _tokenClient=google.accounts.oauth2.initTokenClient({client_id:cid,
+        scope:'https://www.googleapis.com/auth/drive.file', callback:cb});
+    }
+    _tokenClient.callback=cb;
+    _tokenClient.requestAccessToken({prompt: _accessToken?'':'consent'});
+  });
+}
+async function driveFindFile(token){
+  const q=encodeURIComponent("name='"+DRIVE_FILE+"' and trashed=false");
+  const r=await fetch('https://www.googleapis.com/drive/v3/files?spaces=drive&fields=files(id,name)&q='+q,
+    {headers:{Authorization:'Bearer '+token}});
+  if(!r.ok)throw new Error('list_failed');
+  const d=await r.json();
+  return (d.files&&d.files[0])?d.files[0].id:null;
+}
+async function driveBackup(){
+  try{
+    if(!driveClientId()){dStatus('⚠️ Önce Google Client ID gir ve kaydet.');return;}
+    dStatus('🔐 Google izni isteniyor…');
+    const token=await getDriveToken();
+    dStatus('☁️ Drive’a yazılıyor…');
+    const content=JSON.stringify({runs:db.runs,deleted:db.deleted,savedAt:new Date().toISOString()});
+    const id=await driveFindFile(token);
+    const meta={name:DRIVE_FILE,mimeType:'application/json'};
+    const boundary='rA'+Math.random().toString(36).slice(2);
+    const body='--'+boundary+'\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n'+
+      JSON.stringify(id?{}:meta)+'\r\n--'+boundary+
+      '\r\nContent-Type: application/json\r\n\r\n'+content+'\r\n--'+boundary+'--';
+    const url=id?('https://www.googleapis.com/upload/drive/v3/files/'+id+'?uploadType=multipart')
+               :('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart');
+    const r=await fetch(url,{method:id?'PATCH':'POST',
+      headers:{Authorization:'Bearer '+token,'Content-Type':'multipart/related; boundary='+boundary},body});
+    if(!r.ok)throw new Error('upload_failed');
+    dStatus('✓ Drive’a yedeklendi: '+new Date().toLocaleString('tr-TR'));
+  }catch(e){
+    dStatus(e.message==='no_client_id'?'⚠️ Önce Google Client ID gir.':
+            e.message==='gis_yok'?'⚠️ Google bağlantısı yüklenmedi, sayfayı yenile.':
+            '⚠️ Yedeklenemedi: '+e.message);
+  }
+}
+async function driveRestore(){
+  try{
+    if(!driveClientId()){dStatus('⚠️ Önce Google Client ID gir ve kaydet.');return;}
+    dStatus('🔐 Google izni isteniyor…');
+    const token=await getDriveToken();
+    dStatus('🔎 Drive’da yedek aranıyor…');
+    const id=await driveFindFile(token);
+    if(!id){dStatus('⚠️ Drive’da yedek bulunamadı (önce yedekle).');return;}
+    const r=await fetch('https://www.googleapis.com/drive/v3/files/'+id+'?alt=media',
+      {headers:{Authorization:'Bearer '+token}});
+    if(!r.ok)throw new Error('download_failed');
+    const d=await r.json();
+    if(!d||!Array.isArray(d.runs))throw new Error('bozuk_dosya');
+    db=mergeDb(db,d);saveLocal();render();schedulePush();
+    dStatus('✓ Drive’dan geri yüklendi ('+d.runs.length+' antrenman).');
+  }catch(e){ dStatus('⚠️ Geri yüklenemedi: '+e.message); }
+}
+
 /* ---------------- gezinme ---------------- */
 function setActiveTab(){
   document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active',v.id==='v-'+view));
@@ -733,6 +825,19 @@ document.querySelectorAll('.fbtn').forEach(b=>b.onclick=()=>{
 $('btnExport').onclick=exportBackup;
 $('btnImport').onclick=()=>$('importFile').click();
 $('importFile').onchange=e=>{if(e.target.files[0])importBackup(e.target.files[0]);e.target.value='';};
+// Google Drive
+$('btnDriveBackup').onclick=driveBackup;
+$('btnDriveRestore').onclick=driveRestore;
+$('btnSaveClientId').onclick=()=>{const v=$('f_clientid').value.trim();localStorage.setItem(LS_GID,v);_tokenClient=null;_accessToken='';
+  dStatus(v?'✓ Client ID kaydedildi. Artık Drive’a yedekleyebilirsin.':'Client ID temizlendi.');};
+$('btnDriveHelp').onclick=()=>alert(
+  'Google Client ID nasıl alınır (tek seferlik):\n\n'+
+  '1) console.cloud.google.com → yeni proje oluştur (örn. RunAdam).\n'+
+  '2) "APIs & Services → Library" → "Google Drive API" → Enable.\n'+
+  '3) "OAuth consent screen" → External → uygulama adı/e-posta gir → Test users’a kendi Gmail’ini ekle.\n'+
+  '4) "Credentials → Create credentials → OAuth client ID" → tip: Web application.\n'+
+  '   Authorized JavaScript origins’e şunu ekle:\n   '+location.origin+'\n'+
+  '5) Oluşan Client ID’yi (….apps.googleusercontent.com) kopyala, buradaki kutuya yapıştır → Kaydet.');
 $('btnWipe').onclick=()=>{if(confirm('TÜM antrenman verileri bu cihazdan ve buluttan silinsin mi? Geri alınamaz.')){
   db.runs.forEach(r=>{if(!db.deleted.includes(r.id))db.deleted.push(r.id);});db.runs=[];saveLocal();render();schedulePush();}};
 
