@@ -424,8 +424,8 @@ function saveLocal(){localStorage.setItem(LS,JSON.stringify(db))}
 function getCode(){let c=localStorage.getItem(LS_CODE);
   if(!c){c=(Math.random().toString(36).slice(2,6)+Math.random().toString(36).slice(2,6)).toUpperCase();localStorage.setItem(LS_CODE,c);}
   return c;}
-function setCode(c){localStorage.setItem(LS_CODE,c.toUpperCase());}
-function kvKey(){return 'runadam_'+getCode()}
+function setCode(c){const v=String(c||'').replace(/[^A-Za-z0-9_-]/g,'').toUpperCase().slice(0,40);if(v)localStorage.setItem(LS_CODE,v);}
+function kvKey(){return 'runadam_'+getCode().replace(/[^A-Za-z0-9_-]/g,'').slice(0,60)}
 
 /* ---------------- bulut senkron ---------------- */
 let syncing=false, pushTimer=null;
