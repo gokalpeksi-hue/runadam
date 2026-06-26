@@ -25,6 +25,15 @@ const PORT = process.env.PORT || 3000;
 
 app.use(express.json({ limit: "4mb" }));
 
+// --- CORS (github.io gibi farkli bir adresten frontend bu API'yi cagirabilsin) ---
+app.use("/api", (req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Methods", "GET,POST,PUT,OPTIONS");
+  res.header("Access-Control-Allow-Headers", "content-type");
+  if (req.method === "OPTIONS") return res.sendStatus(204);
+  next();
+});
+
 // --- Saglik kontrolu ---
 app.get("/api/health", (req, res) => {
   res.json({
