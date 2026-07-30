@@ -121,7 +121,10 @@ app.post("/api/vision-activity", async (req, res) => {
   if (!image) return res.status(400).json({ error: "no_image" });
   try {
     const parsed = await claudeVision(apiKey, image, mediaType, ACT_VISION_PROMPT);
-    res.json(parsed || {});
+    // Model JSON'a cevrilemeyen bir yanit dondurduyse 422: frontend "okunamadi,
+    // tekrar dene" mesaji gosterir (200 + bos nesne sessizce "okundu" gorunuyordu)
+    if (!parsed) return res.status(422).json({ error: "parse_failed" });
+    res.json(parsed);
   } catch (e) {
     console.error("vision-activity failed", e && e.status, e && (e.body || e.message));
     res.status(502).json({ error: "api_error" });

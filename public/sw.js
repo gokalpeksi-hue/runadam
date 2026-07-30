@@ -1,4 +1,4 @@
-const CACHE = 'runadam-v9';
+const CACHE = 'runadam-v10';
 const ASSETS = [
   './', './index.html', './manifest.webmanifest', './logo.svg', './hero.webp', './logo-photo.webp',
   './apple-touch-icon.png', './icon-192.png', './icon-512.png', './icon-maskable-512.png'
