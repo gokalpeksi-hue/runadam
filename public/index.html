@@ -192,6 +192,27 @@
     background:#0b1a44;border:1px solid var(--line);border-radius:11px;padding:12px;text-align:center;color:#fff;user-select:all;
     text-shadow:0 0 10px rgba(172,193,255,.6)}
   a{color:var(--blue2)}
+
+  /* ---- PDF / yazdirma: sadece #printArea gorunur, tablo siyah-beyaz ---- */
+  #printArea{display:none}
+  @media print{
+    body{background:#fff!important;color:#000;padding:0;min-height:0}
+    body::before,body::after{content:none!important}
+    body>:not(#printArea){display:none!important}
+    #printArea{display:block!important;color:#000;padding:10px}
+    #printArea .p-hd{font-size:17px;font-weight:800;margin-bottom:2px}
+    #printArea .p-sub{font-size:11px;color:#555;margin-bottom:12px}
+    #printArea table{border-collapse:collapse;width:100%;font-size:10.5px;min-width:0}
+    #printArea th,#printArea td{border:1px solid #999;padding:5px 7px;text-align:right;
+      color:#000;background:#fff!important;white-space:nowrap;position:static!important}
+    #printArea th{background:#eee!important;font-size:9px;text-transform:uppercase;letter-spacing:.3px}
+    #printArea td:first-child,#printArea th:first-child{text-align:left;border-right:1px solid #999;min-width:0}
+    #printArea .d1{font-weight:700;color:#000}
+    #printArea .d2{display:block;font-size:8.5px;color:#555;font-weight:400;margin-top:1px}
+    #printArea td.hi{font-weight:700;color:#000}
+    #printArea .muted{color:#888}
+    #printArea tr.tot td{background:#eee!important;font-weight:800;border-top:2px solid #666}
+  }
 </style>
 </head>
 <body>
@@ -247,6 +268,8 @@
       <button class="fbtn" data-mode="ay">Aylık</button>
     </div>
     <div id="tableWrap"></div>
+    <button class="btn btn-ghost btn-sm" id="btnPdf" style="width:100%;margin-top:12px">🖨️ PDF olarak kaydet / yazdır</button>
+    <p class="note" style="margin-top:8px;text-align:center">Açılan yazdırma ekranında "PDF olarak kaydet"i seç.</p>
   </section>
 
   <!-- ================= İSTATİSTİK ================= -->
@@ -313,6 +336,16 @@
       </div>
     </div>
 
+    <div class="sec-h"><span>Sunucu</span><span class="ln"></span></div>
+    <div class="card">
+      <p class="note">Fotoğraf okuma ve bulut senkron bu sunucu üzerinden çalışır.
+        Fotoğraf tanınmıyor ya da senkron "çevrimdışı" görünüyorsa buradaki adresi kontrol et.
+        Boş bırakılırsa varsayılan adres kullanılır.</p>
+      <div class="field" style="margin-top:9px"><label>Sunucu (API) adresi</label>
+        <input type="url" id="f_api" placeholder="https://ornek.onrender.com" autocomplete="off"></div>
+      <button class="btn btn-ghost btn-sm" id="btnSaveApi">💾 Kaydet</button>
+    </div>
+
     <div class="sec-h"><span>Uygulama</span><span class="ln"></span></div>
     <div class="card">
       <p class="note">RunAdam — koşu bandı / kardiyo ekranının fotoğrafını çek, aktiviteni otomatik kaydet.
@@ -361,7 +394,7 @@
     <div class="grid3">
       <div class="field"><label>Ort. Tempo (dk/km)</label><input type="text" id="f_pace" inputmode="numeric" placeholder="5:52"></div>
       <div class="field"><label>Ort. Hız (km/sa)</label><input type="text" id="f_speed" inputmode="decimal" placeholder="10.2"></div>
-      <div class="field"><label>Ort. Nabız (bpm)</label><input type="text" id="f_hr" inputmode="numeric" placeholder="161"></div>
+      <div class="field"><label>Ort. Nabız (bpm)</label><input type="text" id="f_hr" inputmode="decimal" placeholder="161 veya 161,5"></div>
     </div>
     <div class="grid3">
       <div class="field"><label>Ort. Eğim (%)</label><input type="text" id="f_incline" inputmode="decimal" placeholder="-"></div>
@@ -380,6 +413,9 @@
 </div>
 
 <input type="file" id="importFile" accept="application/json,.json" class="hidden">
+
+<!-- ===== PDF / YAZDIRMA ALANI (sadece yazdirirken gorunur) ===== -->
+<div id="printArea"></div>
 
 <script>
 "use strict";
@@ -409,9 +445,12 @@ function fmtDateLong(key){try{return parseKey(key).toLocaleDateString('tr-TR',{d
 /* ---------------- API adresi ----------------
    Ayni sunucudan servis edilirse (Render) bos = ayni origin.
    GitHub Pages (github.io) gibi statik barindirmada backend yok; canli
-   sunucuya yonlendir (foto okuma + senkron orada calissin). */
-const API_BASE = (location.hostname.endsWith('github.io') || location.protocol==='file:')
+   sunucuya yonlendir (foto okuma + senkron orada calissin).
+   Ayarlar'dan girilen adres varsayilani ezer (localStorage). */
+const LS_API='runadam_apibase';
+const DEFAULT_API = (location.hostname.endsWith('github.io') || location.protocol==='file:')
   ? 'https://urun-fiyat-takip.onrender.com' : '';
+const API_BASE = (localStorage.getItem(LS_API)||'').trim().replace(/\/+$/,'') || DEFAULT_API;
 
 /* ---------------- durum / depo ---------------- */
 const LS='runadam_db_v1', LS_CODE='runadam_synccode';
@@ -610,7 +649,8 @@ function renderStats(){
   }).join('');
 }
 function renderSettings(){$('codeBox').textContent=getCode();
-  const ci=$('f_clientid'); if(ci&&!ci.value)ci.value=driveClientId();}
+  const ci=$('f_clientid'); if(ci&&!ci.value)ci.value=driveClientId();
+  const ai=$('f_api'); if(ai&&!ai.value)ai.value=localStorage.getItem(LS_API)||'';}
 
 function bindRunCards(root){root.querySelectorAll('.run').forEach(el=>el.onclick=()=>openEdit(el.dataset.id));}
 
@@ -654,7 +694,7 @@ function saveRun(){
   if(!speed&&distance>0&&durationSec>0)speed=r1(distance/(durationSec/3600));
   if(!speed&&paceSec>0)speed=r1(3600/paceSec);
   if(!paceSec&&speed>0)paceSec=Math.round(3600/speed);
-  const hr=Math.round(numTR($('f_hr').value));
+  const hr=r1(numTR($('f_hr').value));
   const incline=numTR($('f_incline').value);
   const climb=numTR($('f_climb').value);
   const watt=Math.round(numTR($('f_watt').value));
@@ -686,7 +726,7 @@ async function analyzePhoto(file){
   if(!file)return;
   const st=$('editStatus');st.textContent='🖼️ Fotoğraf hazırlanıyor…';
   try{
-    const {base64,mediaType,dataUrl}=await downscaleImage(file,1280,0.75);
+    const {base64,mediaType,dataUrl}=await downscaleImage(file,1568,0.82);
     const pv=$('editPreview');pv.src=dataUrl;pv.style.display='block';
     if(API_BASE){
       st.textContent='⏳ Sunucu uyandırılıyor… (uyuyorsa 1 dakikayı bulabilir)';
@@ -710,8 +750,11 @@ async function analyzePhoto(file){
       }
     }
     if(r.status===503){st.innerHTML='⚠️ Otomatik okuma kapalı (sunucuda <b>ANTHROPIC_API_KEY</b> gerekli). Değerleri elle gir.';return;}
-    if(!r.ok){st.textContent='⚠️ Okunamadı (HTTP '+r.status+'). Değerleri elle gir.';return;}
+    if(r.status===422){st.textContent='⚠️ Ekrandaki değerler okunamadı. Fotoğrafı daha yakından, parlamadan ve düz açıyla çekip tekrar dene ya da elle gir.';return;}
+    if(!r.ok){st.textContent='⚠️ Okunamadı (HTTP '+r.status+'). Sunucu adresini Ayarlar’dan kontrol edebilirsin. Değerleri elle gir.';return;}
     const d=await r.json();
+    const tanindi=['durationSec','distance','kcal','avgPaceSec','avgSpeed','avgHr','incline','climb','watt','mets'].some(k=>+d[k]>0);
+    if(!tanindi){st.textContent='⚠️ Ekrandaki değerler okunamadı. Fotoğrafı daha yakından, parlamadan ve düz açıyla çekip tekrar dene ya da elle gir.';return;}
     if(d.name)$('f_name').value=d.name;
     if(+d.durationSec)$('f_dur').value=fmtDurMin(d.durationSec);
     if(+d.distance)$('f_dist').value=r1(d.distance);
@@ -840,6 +883,16 @@ document.querySelectorAll('.fbtn').forEach(b=>b.onclick=()=>{
   document.querySelectorAll('.fbtn').forEach(x=>x.classList.toggle('on',x===b));
   renderTable();
 });
+$('btnPdf').onclick=()=>{
+  const t=$('tableWrap').querySelector('table');
+  if(!t){alert('Henüz tabloda veri yok.');return;}
+  const lbl={gun:'Günlük',hafta:'Haftalık',ay:'Aylık'}[tableMode]||'';
+  $('printArea').innerHTML=
+    `<div class="p-hd">RunAdam — ${lbl} Antrenman Tablosu</div>`+
+    `<div class="p-sub">Çıktı tarihi: ${new Date().toLocaleDateString('tr-TR',{day:'2-digit',month:'long',year:'numeric'})}</div>`+
+    t.outerHTML;
+  window.print();
+};
 $('btnExport').onclick=exportBackup;
 $('btnImport').onclick=()=>$('importFile').click();
 $('importFile').onchange=e=>{if(e.target.files[0])importBackup(e.target.files[0]);e.target.value='';};
@@ -856,6 +909,12 @@ $('btnDriveHelp').onclick=()=>alert(
   '4) "Credentials → Create credentials → OAuth client ID" → tip: Web application.\n'+
   '   Authorized JavaScript origins’e şunu ekle:\n   '+location.origin+'\n'+
   '5) Oluşan Client ID’yi (….apps.googleusercontent.com) kopyala, buradaki kutuya yapıştır → Kaydet.');
+$('btnSaveApi').onclick=()=>{
+  const v=$('f_api').value.trim().replace(/\/+$/,'');
+  if(v&&!/^https?:\/\//.test(v)){alert('Adres http:// ya da https:// ile başlamalı.');return;}
+  localStorage.setItem(LS_API,v);
+  location.reload(); // yeni adres acilista okunur
+};
 $('btnWipe').onclick=()=>{if(confirm('TÜM antrenman verileri bu cihazdan ve buluttan silinsin mi? Geri alınamaz.')){
   db.runs.forEach(r=>{if(!db.deleted.includes(r.id))db.deleted.push(r.id);});db.runs=[];saveLocal();render();schedulePush();}};
 
